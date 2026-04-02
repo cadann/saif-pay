@@ -1,4 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+
+const API = "http://simaosql.ddns.net:3000/api";
 
 const S = `
   @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap');
@@ -16,7 +18,7 @@ const S = `
 
   /* LOGIN */
   .lw { min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; background:radial-gradient(ellipse 80% 60% at 50% 40%,#0d2d45 0%,#080f18 100%); }
-  .lg { position:absolute; width:600px; height:600px; background:radial-gradient(circle,rgba(0,180,255,0.12) 0%,transparent 70%); border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%); animation:pulse 4s ease-in-out infinite; }
+  .lg-glow { position:absolute; width:600px; height:600px; background:radial-gradient(circle,rgba(0,180,255,0.12) 0%,transparent 70%); border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%); animation:pulse 4s ease-in-out infinite; }
   @keyframes pulse{0%,100%{opacity:.6;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}}
   .lc { position:relative;z-index:1; background:rgba(13,30,46,0.92); border:1px solid var(--border); border-radius:var(--radius-lg); padding:44px 52px; width:400px; box-shadow:0 8px 48px rgba(0,0,0,0.7),var(--glow-md); backdrop-filter:blur(12px); animation:fu .5s ease; }
   @keyframes fu{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
@@ -59,11 +61,10 @@ const S = `
   .nav-item:hover{background:rgba(0,180,255,0.06);color:var(--white);}
   .nav-item.active{background:rgba(0,180,255,0.1);color:var(--neon);border-left-color:var(--neon);text-shadow:0 0 8px rgba(0,180,255,0.5);}
   .nav-icon{font-size:17px;}
-  .nav-cnt{margin-left:auto;background:rgba(0,180,255,0.15);border:1px solid var(--border);color:var(--neon);font-size:10px;padding:1px 7px;border-radius:10px;min-width:22px;text-align:center;}
   .content{flex:1;padding:28px;overflow-y:auto;}
 
   /* MODULE */
-  .mf{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow);max-width:960px;animation:fu .3s ease;}
+  .mf{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow);max-width:860px;animation:fu .3s ease;}
   .mh{padding:16px 24px;background:linear-gradient(90deg,rgba(0,100,180,0.25),rgba(0,180,255,0.08));border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
   .mh-icon{font-size:22px;}
   .mh h2{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;letter-spacing:2px;color:var(--neon2);text-shadow:var(--glow-sm);text-transform:uppercase;}
@@ -76,7 +77,6 @@ const S = `
   .fg label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--neon);opacity:.75;}
   .fg input,.fg select,.fg textarea{background:var(--input-bg);border:1px solid var(--input-bd);border-radius:var(--radius);padding:8px 12px;font-size:13px;font-family:'Exo 2',sans-serif;color:var(--white);outline:none;transition:all .2s;}
   .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--neon);box-shadow:var(--glow-sm);background:rgba(0,180,255,0.06);}
-  .fg input.ro{background:rgba(0,0,0,0.3);color:var(--muted);border-color:var(--muted2);cursor:default;}
   .fg textarea{resize:vertical;min-height:80px;}
   .fg select option{background:#0d1e2e;color:#e8f4ff;}
   .fg.sm{flex:0 0 80px;min-width:60px;} .fg.md{flex:0 0 150px;} .fg.lg{flex:1;min-width:200px;} .fg.xl{flex:2;}
@@ -88,32 +88,24 @@ const S = `
   .div{height:1px;background:var(--border2);margin:20px 0;}
 
   /* BUTTONS */
-  .bar{display:flex;gap:10px;}
+  .bar{display:flex;gap:10px;align-items:center;}
   .btn{padding:9px 22px;border:none;border-radius:var(--radius);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;position:relative;overflow:hidden;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
   .btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);transition:left .35s;}
-  .btn:hover::before{left:100%;}
+  .btn:hover:not(:disabled)::before{left:100%;}
   .bs{background:linear-gradient(90deg,#0077cc,#00b4ff);color:#fff;box-shadow:0 0 12px rgba(0,180,255,0.35);}
-  .bs:hover{box-shadow:var(--glow-md);filter:brightness(1.1);}
+  .bs:hover:not(:disabled){box-shadow:var(--glow-md);filter:brightness(1.1);}
   .bc{background:linear-gradient(90deg,#006644,#00d084);color:#fff;box-shadow:0 0 10px rgba(0,208,132,0.3);}
-  .bc:hover{filter:brightness(1.1);box-shadow:0 0 16px rgba(0,208,132,0.4);}
   .br{background:rgba(255,255,255,0.07);border:1px solid var(--border);color:var(--muted);}
-  .br:hover{border-color:var(--neon);color:var(--neon);}
+  .br:hover:not(:disabled){border-color:var(--neon);color:var(--neon);}
 
-  /* TABLE */
-  .tw{overflow-x:auto;margin-top:4px;}
-  table{width:100%;border-collapse:collapse;font-size:13px;}
-  thead tr{background:rgba(0,180,255,0.06);border-bottom:1px solid var(--border);}
-  thead th{padding:10px 14px;text-align:left;color:var(--neon);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;font-family:'Exo 2',sans-serif;font-weight:600;}
-  tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);transition:background .1s;}
-  tbody tr:hover{background:rgba(0,180,255,0.05);}
-  tbody td{padding:10px 14px;color:#c0d8e8;}
-  .ta{display:flex;gap:6px;}
-  .tb2{padding:4px 12px;font-size:11px;border:none;border-radius:4px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600;letter-spacing:.5px;transition:all .15s;}
-  .te{background:rgba(0,100,200,0.3);border:1px solid rgba(0,180,255,0.3);color:#00b4ff;}
-  .te:hover{background:rgba(0,100,200,0.5);box-shadow:var(--glow-sm);}
-  .td2{background:rgba(255,50,80,0.15);border:1px solid rgba(255,50,80,0.3);color:#ff4d6d;}
-  .td2:hover{background:rgba(255,50,80,0.3);}
-  .empty{color:var(--muted);font-size:13px;text-align:center;padding:32px;letter-spacing:.5px;}
+  /* STATUS MESSAGES */
+  .msg{padding:12px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;margin-top:16px;display:flex;align-items:center;gap:10px;border:1px solid;}
+  .msg-ok{background:rgba(0,30,20,0.95);border-color:rgba(0,208,132,0.4);color:var(--success);}
+  .msg-err{background:rgba(30,0,10,0.95);border-color:rgba(255,77,109,0.4);color:var(--danger);}
+  .msg-load{background:rgba(0,20,40,0.95);border-color:rgba(0,180,255,0.3);color:var(--neon);}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,180,255,0.3);border-top-color:var(--neon);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+  @keyframes spin{to{transform:rotate(360deg)}}
 
   /* DASH */
   .dw{max-width:900px;}
@@ -128,9 +120,8 @@ const S = `
   .dcg{position:absolute;bottom:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(0,180,255,0.12),transparent 70%);}
   .dct{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
   .dci{width:44px;height:44px;background:rgba(0,180,255,0.1);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;}
-  .dck{font-size:11px;color:var(--success);background:rgba(0,208,132,0.1);padding:2px 8px;border-radius:10px;}
-  .dcn{font-size:34px;font-weight:700;color:var(--white);font-family:'Rajdhani',sans-serif;}
-  .dcl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;}
+  .dcl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:8px;}
+  .dcd{font-size:13px;color:var(--muted);margin-top:4px;}
 
   /* TOAST */
   .toast-w{position:fixed;top:68px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
@@ -141,7 +132,6 @@ const S = `
 `;
 
 const UF = ["AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA","PB","PE","PI","PR","RJ","RN","RO","RR","RS","SC","SE","SP","TO"];
-const nextCode = l => l.length ? Math.max(...l.map(i=>i.codigo))+1 : 1;
 const fmtCep = v => v.replace(/\D/g,"").replace(/(\d{5})(\d)/,"$1-$2").substring(0,9);
 const fmtFone = v => { const d=v.replace(/\D/g,"").substring(0,10); if(!d.length) return ""; if(d.length<=2) return `(${d}`; if(d.length<=6) return `(${d.slice(0,2)}) ${d.slice(2)}`; return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`; };
 const fmtCel = v => { const d=v.replace(/\D/g,"").substring(0,11); if(!d.length) return ""; if(d.length<=2) return `(${d}`; if(d.length<=7) return `(${d.slice(0,2)}) ${d.slice(2)}`; return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`; };
@@ -156,7 +146,7 @@ function Login({ onLogin }) {
   const go = () => { if(l==="admin"&&s==="admin123") onLogin(l); else setE("Usuário ou senha inválidos."); };
   return (
     <div className="lw">
-      <div className="lg"/>
+      <div className="lg-glow"/>
       <div className="lc">
         <div className="logo-w">
           <div className="logo-i">💸</div>
@@ -191,39 +181,44 @@ function Topbar({ user, mod, onLogout }) {
   );
 }
 
-function Sidebar({ active, onNav, counts }) {
-  const items=[{key:"dashboard",icon:"⬡",label:"Painel"},{key:"eventos",icon:"🎪",label:"Eventos",cnt:counts.eventos},{key:"pontos",icon:"🏪",label:"Pontos de Venda",cnt:counts.pontos},{key:"produtos",icon:"📦",label:"Produtos",cnt:counts.produtos}];
+function Sidebar({ active, onNav }) {
+  const items=[
+    {key:"dashboard",icon:"⬡",label:"Painel"},
+    {key:"eventos",icon:"🎪",label:"Eventos"},
+    {key:"pontos",icon:"🏪",label:"Pontos de Venda"},
+    {key:"produtos",icon:"📦",label:"Produtos"},
+  ];
   return (
     <div className="sidebar">
       <div className="nav-sec">Navegação</div>
       {items.map(i=>(
         <div key={i.key} className={`nav-item${active===i.key?" active":""}`} onClick={()=>onNav(i.key)}>
           <span className="nav-icon">{i.icon}</span>{i.label}
-          {i.cnt!==undefined&&<span className="nav-cnt">{i.cnt}</span>}
         </div>
       ))}
     </div>
   );
 }
 
-function Dashboard({ eventos, pontos, produtos, onNav }) {
-  const c=[{key:"eventos",icon:"🎪",label:"Eventos",n:eventos.length},{key:"pontos",icon:"🏪",label:"Pontos de Venda",n:pontos.length},{key:"produtos",icon:"📦",label:"Produtos",n:produtos.length}];
+function Dashboard({ onNav }) {
+  const cards = [
+    { key:"eventos",  icon:"🎪", label:"Eventos",         desc:"Cadastrar novo evento" },
+    { key:"pontos",   icon:"🏪", label:"Pontos de Venda", desc:"Cadastrar ponto de venda" },
+    { key:"produtos", icon:"📦", label:"Produtos",        desc:"Cadastrar produto" },
+  ];
   return (
     <div className="dw">
       <div className="dwl">
         <h1>BEM-VINDO AO SAIF PAY</h1>
-        <p>Gerencie seus eventos, pontos de venda e produtos em um só lugar.</p>
+        <p>Selecione um módulo para cadastrar informações.</p>
       </div>
       <div className="dg">
-        {c.map(x=>(
-          <div key={x.key} className="dc" onClick={()=>onNav(x.key)}>
+        {cards.map(c=>(
+          <div key={c.key} className="dc" onClick={()=>onNav(c.key)}>
             <div className="dcg"/>
-            <div className="dct">
-              <div className="dci">{x.icon}</div>
-              <span className="dck">● Ativo</span>
-            </div>
-            <div className="dcn">{x.n}</div>
-            <div className="dcl">{x.label}</div>
+            <div className="dct"><div className="dci">{c.icon}</div></div>
+            <div className="dcl">{c.label}</div>
+            <div className="dcd">{c.desc}</div>
           </div>
         ))}
       </div>
@@ -231,22 +226,60 @@ function Dashboard({ eventos, pontos, produtos, onNav }) {
   );
 }
 
-const EV0={codigo:"",descricao:"",endereco:"",bairro:"",cidade:"",uf:"",cep:"",fone_fixo:"",celular:"",inicio:"",fim:"",email:"",responsavel:"",observacoes:"",impressora:false};
+// ── EVENTOS
+const EV0 = { descricao:"", endereco:"", bairro:"", cidade:"", uf:"", cep:"", fone:"", celular:"", eMail:"", observacao:"", dataInicio:"", dataFim:"", responsavel:"", cupom:false };
 
-function Eventos({ list, onSave, onDelete, addToast }) {
-  const [v,setV]=useState("list"); const [f,setF]=useState(EV0); const [eid,setEid]=useState(null);
-  const set=(k,val)=>setF(x=>({...x,[k]:val}));
-  const openNew=()=>{setF({...EV0,codigo:nextCode(list)});setEid(null);setV("form");};
-  const openEdit=r=>{setF({...r});setEid(r.id);setV("form");};
-  const save=()=>{if(!f.descricao.trim()){addToast("Descrição é obrigatória.","err");return;}onSave("eventos",{...f,id:eid??Date.now()},eid);addToast(eid?"Evento atualizado!":"Evento cadastrado!","ok");setV("list");};
-  const del=id=>{onDelete("eventos",id);addToast("Evento excluído.","ok");};
+function Eventos() {
+  const [f, setF] = useState(EV0);
+  const [status, setStatus] = useState(null); // null | {type, msg}
+  const [loading, setLoading] = useState(false);
+  const set = (k,v) => setF(x=>({...x,[k]:v}));
 
-  if(v==="form") return (
+  const limpar = () => { setF(EV0); setStatus(null); };
+
+  const salvar = async () => {
+    if(!f.descricao.trim()) { setStatus({type:"err", msg:"Descrição é obrigatória."}); return; }
+    setLoading(true); setStatus(null);
+    try {
+      const body = {
+        descricao: f.descricao,
+        endereco: f.endereco,
+        bairro: f.bairro,
+        cidade: f.cidade,
+        uf: f.uf,
+        cep: f.cep.replace(/\D/g,""),
+        fone: f.fone.replace(/\D/g,""),
+        celular: f.celular.replace(/\D/g,""),
+        eMail: f.eMail,
+        observacao: f.observacao,
+        dataInicio: f.dataInicio ? f.dataInicio + "T00:00:00" : "",
+        dataFim: f.dataFim ? f.dataFim + "T23:59:00" : "",
+        responsavel: f.responsavel,
+        cupom: f.cupom ? "1" : "0"
+      };
+      const res = await fetch(`${API}/GrvEve`, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if(data.status === "ok") {
+        setStatus({type:"ok", msg:`Evento cadastrado com sucesso! ID: ${data.id}`});
+        setF(EV0);
+      } else {
+        setStatus({type:"err", msg:"Erro ao cadastrar evento. Tente novamente."});
+      }
+    } catch(e) {
+      setStatus({type:"err", msg:"Erro de conexão com a API. Verifique a rede."});
+    }
+    setLoading(false);
+  };
+
+  return (
     <div className="mf">
-      <div className="mh"><span className="mh-icon">🎪</span><h2>{eid?"Editar Evento":"Novo Evento"}</h2><div className="mh-line"/></div>
+      <div className="mh"><span className="mh-icon">🎪</span><h2>Novo Evento</h2><div className="mh-line"/></div>
       <div className="mb">
         <div className="fr">
-          <div className="fg sm"><label>Código</label><input value={String(f.codigo).padStart(4,"0")} readOnly className="ro"/></div>
           <div className="fg xl"><label>Descrição<span className="req">*</span></label><input value={f.descricao} onChange={e=>set("descricao",e.target.value)} maxLength={100} autoFocus/></div>
         </div>
         <div className="fr">
@@ -257,156 +290,157 @@ function Eventos({ list, onSave, onDelete, addToast }) {
           <div className="fg lg"><label>Cidade</label><input value={f.cidade} onChange={e=>set("cidade",e.target.value)}/></div>
           <div className="fg sm"><label>UF</label><select value={f.uf} onChange={e=>set("uf",e.target.value)}><option value=""/>{UF.map(u=><option key={u}>{u}</option>)}</select></div>
           <div className="fg md"><label>CEP</label><input value={f.cep} onChange={e=>set("cep",fmtCep(e.target.value))} placeholder="00000-000"/></div>
-          <div className="fg md"><label>Fone Fixo</label><input value={f.fone_fixo} onChange={e=>set("fone_fixo",fmtFone(e.target.value))} placeholder="(00) 0000-0000"/></div>
+          <div className="fg md"><label>Fone Fixo</label><input value={f.fone} onChange={e=>set("fone",fmtFone(e.target.value))} placeholder="(00) 0000-0000"/></div>
           <div className="fg md"><label>Celular</label><input value={f.celular} onChange={e=>set("celular",fmtCel(e.target.value))} placeholder="(00) 00000-0000"/></div>
         </div>
         <div className="fr">
-          <div className="fg md"><label>Início</label><input type="date" value={f.inicio} onChange={e=>set("inicio",e.target.value)}/></div>
-          <div className="fg md"><label>Fim</label><input type="date" value={f.fim} onChange={e=>set("fim",e.target.value)}/></div>
-          <div className="fg xl"><label>E-mail</label><input type="email" value={f.email} onChange={e=>set("email",e.target.value)}/></div>
+          <div className="fg md"><label>Data Início</label><input type="date" value={f.dataInicio} onChange={e=>set("dataInicio",e.target.value)}/></div>
+          <div className="fg md"><label>Data Fim</label><input type="date" value={f.dataFim} onChange={e=>set("dataFim",e.target.value)}/></div>
+          <div className="fg xl"><label>E-mail</label><input type="email" value={f.eMail} onChange={e=>set("eMail",e.target.value)}/></div>
         </div>
-        <div className="fr"><div className="fg lg"><label>Responsável</label><input value={f.responsavel} onChange={e=>set("responsavel",e.target.value)}/></div></div>
-        <div className="fr"><div className="fg xl"><label>Observações</label><textarea value={f.observacoes} onChange={e=>set("observacoes",e.target.value)}/></div></div>
-        <div className="ck"><input type="checkbox" id="imp" checked={f.impressora} onChange={e=>set("impressora",e.target.checked)}/><label htmlFor="imp">Impressora de Cupom nos Caixas de Consumo</label></div>
+        <div className="fr">
+          <div className="fg lg"><label>Responsável</label><input value={f.responsavel} onChange={e=>set("responsavel",e.target.value)}/></div>
+        </div>
+        <div className="fr">
+          <div className="fg xl"><label>Observações</label><textarea value={f.observacao} onChange={e=>set("observacao",e.target.value)}/></div>
+        </div>
+        <div className="ck">
+          <input type="checkbox" id="cup" checked={f.cupom} onChange={e=>set("cupom",e.target.checked)}/>
+          <label htmlFor="cup">Impressora de Cupom nos Caixas de Consumo</label>
+        </div>
         <div className="div"/>
-        <div className="bar"><button className="btn bs" onClick={save}>💾 Salvar</button><button className="btn br" onClick={()=>setV("list")}>↩ Retornar</button></div>
-      </div>
-    </div>
-  );
-  return (
-    <div className="mf">
-      <div className="mh"><span className="mh-icon">🎪</span><h2>Eventos</h2><div className="mh-line"/></div>
-      <div className="mb">
-        <div className="bar" style={{marginBottom:20}}><button className="btn bc" onClick={openNew}>＋ Cadastrar Evento</button></div>
-        <div className="tw">
-          {list.length===0?<div className="empty">— Nenhum evento cadastrado —</div>:(
-            <table>
-              <thead><tr><th>Cód.</th><th>Descrição</th><th>Cidade / UF</th><th>Início</th><th>Fim</th><th>Responsável</th><th></th></tr></thead>
-              <tbody>{list.map(r=>(
-                <tr key={r.id}>
-                  <td style={{color:"var(--neon)",fontFamily:"Rajdhani,sans-serif",fontWeight:700}}>{String(r.codigo).padStart(4,"0")}</td>
-                  <td>{r.descricao}</td><td>{r.cidade}{r.uf?` / ${r.uf}`:""}</td><td>{r.inicio||"—"}</td><td>{r.fim||"—"}</td><td>{r.responsavel||"—"}</td>
-                  <td><div className="ta"><button className="tb2 te" onClick={()=>openEdit(r)}>✏ Editar</button><button className="tb2 td2" onClick={()=>del(r.id)}>✕</button></div></td>
-                </tr>
-              ))}</tbody>
-            </table>
-          )}
+        <div className="bar">
+          <button className="btn bs" onClick={salvar} disabled={loading}>
+            {loading ? <><span className="spin"/> Salvando...</> : "💾 Cadastrar"}
+          </button>
+          <button className="btn br" onClick={limpar} disabled={loading}>✕ Limpar</button>
         </div>
+        {status && (
+          <div className={`msg msg-${status.type}`}>
+            {status.type==="ok" ? "✓" : "✕"} {status.msg}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function Pontos({ list, onSave, onDelete, addToast }) {
-  const [v,setV]=useState("list"); const [f,setF]=useState({codigo:"",descricao:""}); const [eid,setEid]=useState(null);
-  const set=(k,val)=>setF(x=>({...x,[k]:val}));
-  const openNew=()=>{setF({codigo:nextCode(list),descricao:""});setEid(null);setV("form");};
-  const openEdit=r=>{setF({...r});setEid(r.id);setV("form");};
-  const save=()=>{if(!f.descricao.trim()){addToast("Descrição é obrigatória.","err");return;}onSave("pontos",{...f,id:eid??Date.now()},eid);addToast(eid?"Ponto atualizado!":"Ponto cadastrado!","ok");setV("list");};
-  const del=id=>{onDelete("pontos",id);addToast("Ponto excluído.","ok");};
+// ── PONTOS DE VENDA
+function Pontos() {
+  const [descricao, setDescricao] = useState("");
+  const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  if(v==="form") return (
-    <div className="mf">
-      <div className="mh"><span className="mh-icon">🏪</span><h2>{eid?"Editar Ponto de Venda":"Novo Ponto de Venda"}</h2><div className="mh-line"/></div>
-      <div className="mb">
-        <div className="fr">
-          <div className="fg sm"><label>Código</label><input value={String(f.codigo).padStart(4,"0")} readOnly className="ro"/><span className="fhint">Automático</span></div>
-          <div className="fg xl"><label>Descrição<span className="req">*</span></label><input value={f.descricao} onChange={e=>set("descricao",e.target.value)} maxLength={100} autoFocus/></div>
-        </div>
-        <div className="div"/>
-        <div className="bar"><button className="btn bs" onClick={save}>💾 Salvar</button><button className="btn br" onClick={()=>setV("list")}>↩ Retornar</button></div>
-      </div>
-    </div>
-  );
+  const limpar = () => { setDescricao(""); setStatus(null); };
+
+  const salvar = async () => {
+    if(!descricao.trim()) { setStatus({type:"err", msg:"Descrição é obrigatória."}); return; }
+    setLoading(true); setStatus(null);
+    try {
+      const res = await fetch(`${API}/GrpBarraca`, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ descricao })
+      });
+      const data = await res.json();
+      if(data.status === "ok") {
+        setStatus({type:"ok", msg:`Ponto de Venda cadastrado com sucesso! Código: ${data.GRPCod}`});
+        setDescricao("");
+      } else {
+        setStatus({type:"err", msg:"Erro ao cadastrar. Tente novamente."});
+      }
+    } catch(e) {
+      setStatus({type:"err", msg:"Erro de conexão com a API. Verifique a rede."});
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="mf">
-      <div className="mh"><span className="mh-icon">🏪</span><h2>Pontos de Venda</h2><div className="mh-line"/></div>
-      <div className="mb">
-        <div className="bar" style={{marginBottom:20}}><button className="btn bc" onClick={openNew}>＋ Cadastrar Ponto</button></div>
-        <div className="tw">
-          {list.length===0?<div className="empty">— Nenhum ponto de venda cadastrado —</div>:(
-            <table>
-              <thead><tr><th>Código</th><th>Descrição</th><th></th></tr></thead>
-              <tbody>{list.map(r=>(
-                <tr key={r.id}>
-                  <td style={{color:"var(--neon)",fontFamily:"Rajdhani,sans-serif",fontWeight:700}}>{String(r.codigo).padStart(4,"0")}</td>
-                  <td>{r.descricao}</td>
-                  <td><div className="ta"><button className="tb2 te" onClick={()=>openEdit(r)}>✏ Editar</button><button className="tb2 td2" onClick={()=>del(r.id)}>✕</button></div></td>
-                </tr>
-              ))}</tbody>
-            </table>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Produtos({ list, pontos, onSave, onDelete, addToast }) {
-  const [v,setV]=useState("list"); const [f,setF]=useState({codigo:"",grupo:"",descricao:"",valor_unitario:"0,00"}); const [eid,setEid]=useState(null);
-  const set=(k,val)=>setF(x=>({...x,[k]:val}));
-  const openNew=()=>{setF({codigo:nextCode(list),grupo:"",descricao:"",valor_unitario:"0,00"});setEid(null);setV("form");};
-  const openEdit=r=>{setF({...r});setEid(r.id);setV("form");};
-  const save=()=>{if(!f.grupo){addToast("Grupo é obrigatório.","err");return;}if(!f.descricao.trim()){addToast("Descrição é obrigatória.","err");return;}onSave("produtos",{...f,id:eid??Date.now()},eid);addToast(eid?"Produto atualizado!":"Produto cadastrado!","ok");setV("list");};
-  const del=id=>{onDelete("produtos",id);addToast("Produto excluído.","ok");};
-  const getPonto=id=>{const p=pontos.find(p=>String(p.id)===String(id));return p?p.descricao:id;};
-
-  if(v==="form") return (
-    <div className="mf">
-      <div className="mh"><span className="mh-icon">📦</span><h2>{eid?"Editar Produto":"Novo Produto"}</h2><div className="mh-line"/></div>
+      <div className="mh"><span className="mh-icon">🏪</span><h2>Novo Ponto de Venda</h2><div className="mh-line"/></div>
       <div className="mb">
         <div className="fr">
-          <div className="fg lg">
-            <label>Grupo / Ponto de Venda<span className="req">*</span></label>
-            <select value={f.grupo} onChange={e=>set("grupo",e.target.value)}>
-              <option value="">— Selecione —</option>
-              {pontos.map(p=><option key={p.id} value={p.id}>{String(p.codigo).padStart(4,"0")} — {p.descricao}</option>)}
-            </select>
-            {pontos.length===0&&<span className="fhint" style={{color:"var(--danger)"}}>Cadastre um Ponto de Venda primeiro.</span>}
+          <div className="fg xl">
+            <label>Descrição<span className="req">*</span></label>
+            <input value={descricao} onChange={e=>setDescricao(e.target.value)} maxLength={100} autoFocus
+              onKeyDown={e=>e.key==="Enter"&&salvar()}/>
+            <span className="fhint">O código será gerado automaticamente pelo sistema.</span>
           </div>
         </div>
-        <div className="fr">
-          <div className="fg sm"><label>Código</label><input value={String(f.codigo).padStart(4,"0")} readOnly className="ro"/><span className="fhint">Automático</span></div>
-          <div className="fg xl"><label>Descrição<span className="req">*</span></label><input value={f.descricao} onChange={e=>set("descricao",e.target.value)} maxLength={100}/></div>
-          <div className="fg md" style={{maxWidth:160}}><label>Valor Unitário (R$)</label><input style={{textAlign:"right"}} value={f.valor_unitario} onChange={e=>set("valor_unitario",fmtM(e.target.value))}/></div>
-        </div>
         <div className="div"/>
-        <div className="bar"><button className="btn bs" onClick={save}>💾 Salvar</button><button className="btn br" onClick={()=>setV("list")}>↩ Retornar</button></div>
-      </div>
-    </div>
-  );
-  return (
-    <div className="mf">
-      <div className="mh"><span className="mh-icon">📦</span><h2>Tabela de Produtos</h2><div className="mh-line"/></div>
-      <div className="mb">
-        <div className="bar" style={{marginBottom:20}}><button className="btn bc" onClick={openNew}>＋ Cadastrar Produto</button></div>
-        <div className="tw">
-          {list.length===0?<div className="empty">— Nenhum produto cadastrado —</div>:(
-            <table>
-              <thead><tr><th>Cód.</th><th>Grupo</th><th>Descrição</th><th style={{textAlign:"right"}}>Valor Unit.</th><th></th></tr></thead>
-              <tbody>{list.map(r=>(
-                <tr key={r.id}>
-                  <td style={{color:"var(--neon)",fontFamily:"Rajdhani,sans-serif",fontWeight:700}}>{String(r.codigo).padStart(4,"0")}</td>
-                  <td>{getPonto(r.grupo)}</td><td>{r.descricao}</td>
-                  <td style={{textAlign:"right",fontFamily:"Rajdhani,sans-serif",fontWeight:600,color:"var(--success)"}}>R$ {r.valor_unitario}</td>
-                  <td><div className="ta"><button className="tb2 te" onClick={()=>openEdit(r)}>✏ Editar</button><button className="tb2 td2" onClick={()=>del(r.id)}>✕</button></div></td>
-                </tr>
-              ))}</tbody>
-            </table>
-          )}
+        <div className="bar">
+          <button className="btn bs" onClick={salvar} disabled={loading}>
+            {loading ? <><span className="spin"/> Salvando...</> : "💾 Cadastrar"}
+          </button>
+          <button className="btn br" onClick={limpar} disabled={loading}>✕ Limpar</button>
         </div>
+        {status && (
+          <div className={`msg msg-${status.type}`}>
+            {status.type==="ok" ? "✓" : "✕"} {status.msg}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
+// ── PRODUTOS
+function Produtos() {
+  const [pontos, setPontos] = useState([]);
+  const [loadingPontos, setLoadingPontos] = useState(true);
+  const [erroPontos, setErroPontos] = useState(false);
+  const [f, setF] = useState({ grupo:"", descricao:"", valor_unitario:"0,00" });
+  const [status, setStatus] = useState(null);
+  const set = (k,v) => setF(x=>({...x,[k]:v}));
+
+  useEffect(() => {
+    fetch(`${API}/LerBarraca`)
+      .then(r=>r.json())
+      .then(data=>{ setPontos(data); setLoadingPontos(false); })
+      .catch(()=>{ setErroPontos(true); setLoadingPontos(false); });
+  }, []);
+
+  return (
+    <div className="mf">
+      <div className="mh"><span className="mh-icon">📦</span><h2>Novo Produto</h2><div className="mh-line"/></div>
+      <div className="mb">
+        {loadingPontos && <div className="msg msg-load"><span className="spin"/> Carregando Pontos de Venda...</div>}
+        {erroPontos && <div className="msg msg-err">✕ Erro ao carregar Pontos de Venda da API.</div>}
+        {!loadingPontos && !erroPontos && (
+          <>
+            <div className="fr">
+              <div className="fg lg">
+                <label>Grupo / Ponto de Venda<span className="req">*</span></label>
+                <select value={f.grupo} onChange={e=>set("grupo",e.target.value)}>
+                  <option value="">— Selecione —</option>
+                  {pontos.map(p=><option key={p.GRPCod} value={p.GRPCod}>{p.GRPCod} — {p.Descricao}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="fr">
+              <div className="fg xl"><label>Descrição<span className="req">*</span></label><input value={f.descricao} onChange={e=>set("descricao",e.target.value)} maxLength={100}/></div>
+              <div className="fg md" style={{maxWidth:160}}><label>Valor Unitário (R$)</label><input style={{textAlign:"right"}} value={f.valor_unitario} onChange={e=>set("valor_unitario",fmtM(e.target.value))}/></div>
+            </div>
+            <div className="div"/>
+            <div className="bar">
+              <button className="btn bs" disabled style={{opacity:.4}}>💾 Cadastrar</button>
+              <span style={{fontSize:12,color:"var(--muted)",marginLeft:8}}>⏳ Aguardando API de Produtos</span>
+            </div>
+          </>
+        )}
+        {status && <div className={`msg msg-${status.type}`}>{status.type==="ok"?"✓":"✕"} {status.msg}</div>}
+      </div>
+    </div>
+  );
+}
+
+// ── ROOT
 export default function App() {
-  const [user,setUser]=useState(null); const [mod,setMod]=useState("dashboard");
+  const [user,setUser]=useState(null);
+  const [mod,setMod]=useState("dashboard");
   const [toasts,setToasts]=useState([]);
-  const [eventos,setEventos]=useState([]); const [pontos,setPontos]=useState([]); const [produtos,setProdutos]=useState([]);
-  const addToast=useCallback((msg,type="ok")=>{const id=Date.now();setToasts(t=>[...t,{id,msg,type}]);setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),3000);},[]);
-  const handleSave=(e,r,eid)=>{const s={eventos:setEventos,pontos:setPontos,produtos:setProdutos};if(eid)s[e](p=>p.map(x=>x.id===eid?r:x));else s[e](p=>[...p,r]);};
-  const handleDel=(e,id)=>{const s={eventos:setEventos,pontos:setPontos,produtos:setProdutos};s[e](p=>p.filter(x=>x.id!==id));};
+  const addToast=useCallback((msg,type="ok")=>{const id=Date.now();setToasts(t=>[...t,{id,msg,type}]);setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),3500);},[]);
+
   if(!user) return <><style>{S}</style><Login onLogin={u=>setUser(u)}/></>;
   return (
     <>
@@ -415,12 +449,12 @@ export default function App() {
       <div className="shell">
         <Topbar user={user} mod={mod} onLogout={()=>setUser(null)}/>
         <div className="main">
-          <Sidebar active={mod} onNav={setMod} counts={{eventos:eventos.length,pontos:pontos.length,produtos:produtos.length}}/>
+          <Sidebar active={mod} onNav={setMod}/>
           <div className="content">
-            {mod==="dashboard"&&<Dashboard eventos={eventos} pontos={pontos} produtos={produtos} onNav={setMod}/>}
-            {mod==="eventos"&&<Eventos list={eventos} onSave={handleSave} onDelete={handleDel} addToast={addToast}/>}
-            {mod==="pontos"&&<Pontos list={pontos} onSave={handleSave} onDelete={handleDel} addToast={addToast}/>}
-            {mod==="produtos"&&<Produtos list={produtos} pontos={pontos} onSave={handleSave} onDelete={handleDel} addToast={addToast}/>}
+            {mod==="dashboard" && <Dashboard onNav={setMod}/>}
+            {mod==="eventos"   && <Eventos addToast={addToast}/>}
+            {mod==="pontos"    && <Pontos addToast={addToast}/>}
+            {mod==="produtos"  && <Produtos addToast={addToast}/>}
           </div>
         </div>
       </div>
