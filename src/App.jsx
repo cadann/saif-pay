@@ -77,12 +77,15 @@ const S = `
     font-size: 32px;
     margin-bottom: 14px;
     box-shadow: 0 8px 24px rgba(45,140,255,0.4);
+    color: #fff; font-weight: 900; font-family: 'Inter', sans-serif;
+    letter-spacing: -1px;
   }
   .login-logo-name {
     font-size: 26px; font-weight: 800; letter-spacing: 3px;
     color: var(--white);
   }
   .login-logo-name span { color: var(--blue2); }
+  .notranslate { translate: no; }
   .login-logo-sub { font-size: 12px; color: var(--gray); margin-top: 4px; letter-spacing: 1px; }
 
   .login-field { margin-bottom: 16px; }
@@ -341,8 +344,8 @@ function Login({onLogin}){
     <div className="login-wrap">
       <div className="login-card">
         <div className="login-logo">
-          <div className="login-logo-icon">💸</div>
-          <div className="login-logo-name">SAIF <span>PAY</span></div>
+          <div className="login-logo-icon notranslate">S$</div>
+          <div className="login-logo-name notranslate" translate="no">SAIF <span>PAY</span></div>
           <div className="login-logo-sub">Gestão de Eventos &amp; Produtos</div>
         </div>
         <div className="login-field"><label>Usuário</label><input value={l} onChange={e=>{setL(e.target.value);setE("");}} placeholder="Digite seu usuário" onKeyDown={e=>e.key==="Enter"&&go()}/></div>
@@ -361,7 +364,7 @@ function Topbar({user,mod,onLogout}){
     <div className="topbar">
       <div className="tb-brand">
         <div className="tb-icon">💸</div>
-        <div className="tb-name">SAIF <span>PAY</span></div>
+        <div className="tb-name notranslate" translate="no">SAIF <span>PAY</span></div>
         <div className="tb-divider"/>
         <div className="tb-page">{labels[mod]||""}</div>
       </div>
