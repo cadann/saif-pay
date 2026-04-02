@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api-proxy/:path*",
+      "destination": "http://simaosql.ddns.net:3000/api/:path*"
+    }
+  ]
+}

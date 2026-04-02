@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 
-const API = "http://simaosql.ddns.net:3000/api";
+const API = "/api-proxy";
 
 const S = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -482,7 +482,7 @@ function Eventos(){
         <div className="divider"/>
         <div className="btn-row">
           <button className="btn btn-primary" onClick={salvar} disabled={loading}>
-            {loading?<><span className="spin"/>Salvando...</>:"Cadastrar Evento"}
+            {loading?<><span className="spin"/>Salvando...</>:<span className="notranslate" translate="no">Cadastrar Evento</span>}
           </button>
           <button className="btn btn-ghost" onClick={limpar} disabled={loading}>Limpar</button>
         </div>
@@ -522,7 +522,7 @@ function Pontos(){
         <div className="divider"/>
         <div className="btn-row">
           <button className="btn btn-primary" onClick={salvar} disabled={loading}>
-            {loading?<><span className="spin"/>Salvando...</>:"Cadastrar Ponto"}
+            {loading?<><span className="spin"/>Salvando...</>:<span className="notranslate" translate="no">Cadastrar Ponto</span>}
           </button>
           <button className="btn btn-ghost" onClick={limpar} disabled={loading}>Limpar</button>
         </div>
