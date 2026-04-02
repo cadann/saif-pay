@@ -383,8 +383,8 @@ function Eventos() {
         Cel:         f.celular.replace(/\D/g,"") || "",
         email:       f.eMail || "",
         Obs:         f.observacao || "",
-        DtInicio:    f.dataInicio ? f.dataInicio + "T00:00:00" : "",
-        DtFim:       f.dataFim   ? f.dataFim   + "T23:59:00" : "",
+        DtInicio:    f.dataInicio ? (d=>d[2]+"/"+d[1]+"/"+d[0]+" 00:00")(f.dataInicio.split("-")) : "",
+        DtFim:       f.dataFim   ? (d=>d[2]+"/"+d[1]+"/"+d[0]+" 23:59")(f.dataFim.split("-"))   : "",
         responsavel: f.responsavel || "",
         cupom:       f.cupom ? "1" : "0"
       };
