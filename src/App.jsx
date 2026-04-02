@@ -383,8 +383,8 @@ function Eventos() {
         celular:     f.celular.replace(/\D/g,"") || "",
         eMail:       f.eMail || "",
         observacao:  f.observacao || "",
-        dataInicio:  f.dataInicio ? f.dataInicio + "T00:00:00" : "",
-        dataFim:     f.dataFim   ? f.dataFim   + "T23:59:00" : "",
+        dtInicio:  f.dataInicio ? f.dataInicio + "T00:00:00" : "",
+        dtFim:     f.dataFim   ? f.dataFim   + "T23:59:00" : "",
         responsavel: f.responsavel || "",
         cupom:       f.cupom ? "1" : "0"
       };
