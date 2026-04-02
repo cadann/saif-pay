@@ -3,222 +3,418 @@ import { useState, useCallback, useEffect } from "react";
 const API = "http://simaosql.ddns.net:3000/api";
 
 const S = `
-  @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg0:#0a1520; --bg1:#0d1e2e; --panel:#0e2033; --border:rgba(0,180,255,0.22);
-    --border2:rgba(0,180,255,0.12); --neon:#00b4ff; --neon2:#00e5ff;
-    --neon-dim:rgba(0,180,255,0.35); --white:#e8f4ff; --muted:#4a7a9b; --muted2:#2a5070;
-    --success:#00d084; --danger:#ff4d6d; --input-bg:rgba(255,255,255,0.06);
-    --input-bd:rgba(0,180,255,0.3); --shadow:0 4px 24px rgba(0,0,0,0.6);
-    --glow-sm:0 0 8px rgba(0,180,255,0.4); --glow-md:0 0 18px rgba(0,180,255,0.5);
-    --radius:6px; --radius-lg:12px;
+    --navy:      #0b1535;
+    --navy2:     #0f1d47;
+    --navy3:     #122060;
+    --card:      #141e3c;
+    --card2:     #1a2550;
+    --blue:      #2d8cff;
+    --blue2:     #4da3ff;
+    --cyan:      #00c2ff;
+    --white:     #ffffff;
+    --gray:      #8892b0;
+    --gray2:     #4a5680;
+    --border:    rgba(45,140,255,0.18);
+    --border2:   rgba(255,255,255,0.07);
+    --success:   #00d68f;
+    --danger:    #ff5c7a;
+    --radius:    10px;
+    --radius-lg: 16px;
+    --shadow:    0 4px 32px rgba(0,0,0,0.5);
+    --glow:      0 0 24px rgba(45,140,255,0.3);
   }
-  body { font-family:'Exo 2',sans-serif; background:var(--bg0); min-height:100vh; color:var(--white); -webkit-font-smoothing:antialiased; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(145deg, #080e28 0%, #0d1535 40%, #0f1d47 100%);
+    min-height: 100vh;
+    color: var(--white);
+    -webkit-font-smoothing: antialiased;
+  }
 
-  /* LOGIN */
-  .lw { min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; background:radial-gradient(ellipse 80% 60% at 50% 40%,#0d2d45 0%,#080f18 100%); }
-  .lg-glow { position:absolute; width:600px; height:600px; background:radial-gradient(circle,rgba(0,180,255,0.12) 0%,transparent 70%); border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%); animation:pulse 4s ease-in-out infinite; }
-  @keyframes pulse{0%,100%{opacity:.6;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}}
-  .lc { position:relative;z-index:1; background:rgba(13,30,46,0.92); border:1px solid var(--border); border-radius:var(--radius-lg); padding:44px 52px; width:400px; box-shadow:0 8px 48px rgba(0,0,0,0.7),var(--glow-md); backdrop-filter:blur(12px); animation:fu .5s ease; }
-  @keyframes fu{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
-  .logo-w { display:flex; flex-direction:column; align-items:center; margin-bottom:36px; }
-  .logo-i { width:72px;height:72px; background:linear-gradient(135deg,#0077cc,#00b4ff); border-radius:18px; display:flex;align-items:center;justify-content:center; font-size:36px; margin-bottom:12px; box-shadow:0 0 28px rgba(0,180,255,0.5),0 0 6px rgba(0,180,255,0.8); position:relative;overflow:hidden; }
-  .logo-i::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.18) 0%,transparent 60%);border-radius:18px;}
-  .logo-n { font-family:'Rajdhani',sans-serif; font-size:30px;font-weight:700; letter-spacing:4px; background:linear-gradient(90deg,#00b4ff,#00e5ff,#00b4ff); -webkit-background-clip:text;-webkit-text-fill-color:transparent; background-size:200%; animation:sh 3s linear infinite; }
-  @keyframes sh{0%{background-position:0%}100%{background-position:200%}}
-  .logo-t { font-size:10px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;margin-top:4px; }
-  .lf { margin-bottom:18px; }
-  .lf label { display:block;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--neon);margin-bottom:6px;opacity:.8; }
-  .lf input { width:100%;padding:11px 14px;background:var(--input-bg);border:1px solid var(--input-bd);border-radius:var(--radius);color:var(--white);font-size:14px;font-family:'Exo 2',sans-serif;outline:none;transition:all .2s; }
-  .lf input:focus{border-color:var(--neon);box-shadow:var(--glow-sm);}
-  .lf input::placeholder{color:var(--muted);}
-  .lb { width:100%;padding:13px;background:linear-gradient(90deg,#0077cc,#00b4ff);border:none;border-radius:var(--radius);color:#fff;font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;letter-spacing:3px;cursor:pointer;margin-top:8px;box-shadow:var(--glow-sm);transition:all .2s;position:relative;overflow:hidden; }
-  .lb::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transition:left .4s;}
-  .lb:hover::before{left:100%;} .lb:hover{box-shadow:var(--glow-md);filter:brightness(1.1);}
-  .le{color:var(--danger);font-size:12px;text-align:center;margin-top:10px;}
-  .lh{text-align:center;font-size:11px;color:var(--muted);margin-top:14px;}
+  /* ── LOGIN ── */
+  .login-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, #080e28 0%, #0d1535 50%, #122060 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .login-wrap::before {
+    content: '';
+    position: absolute;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(45,140,255,0.08) 0%, transparent 65%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .login-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 48px 52px;
+    width: 420px;
+    box-shadow: var(--shadow), var(--glow);
+    position: relative; z-index: 1;
+    animation: slideUp .45s ease;
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none} }
 
-  /* SHELL */
-  .shell{display:flex;flex-direction:column;min-height:100vh;}
-  .topbar{height:56px;background:rgba(10,21,32,0.97);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;box-shadow:0 2px 20px rgba(0,0,0,0.5);position:sticky;top:0;z-index:100;backdrop-filter:blur(8px);}
-  .tb-l{display:flex;align-items:center;gap:14px;}
-  .tb-badge{width:34px;height:34px;background:linear-gradient(135deg,#0077cc,#00b4ff);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 12px rgba(0,180,255,0.5);}
-  .tb-name{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;letter-spacing:3px;background:linear-gradient(90deg,#00b4ff,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-  .tb-sep{width:1px;height:24px;background:var(--border);}
-  .tb-mod{font-size:13px;color:var(--muted);letter-spacing:.5px;}
-  .tb-r{display:flex;align-items:center;gap:14px;}
-  .tb-user{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;}
-  .tb-dot{width:6px;height:6px;border-radius:50%;background:var(--success);box-shadow:0 0 6px var(--success);}
-  .out-btn{padding:6px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius);color:var(--muted);font-size:12px;font-family:'Exo 2',sans-serif;cursor:pointer;transition:all .2s;letter-spacing:.5px;}
-  .out-btn:hover{border-color:var(--neon);color:var(--neon);box-shadow:var(--glow-sm);}
-  .main{display:flex;flex:1;}
+  .login-logo {
+    display: flex; flex-direction: column; align-items: center;
+    margin-bottom: 40px;
+  }
+  .login-logo-icon {
+    width: 68px; height: 68px;
+    background: linear-gradient(135deg, #1a6fff, #00c2ff);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    margin-bottom: 14px;
+    box-shadow: 0 8px 24px rgba(45,140,255,0.4);
+  }
+  .login-logo-name {
+    font-size: 26px; font-weight: 800; letter-spacing: 3px;
+    color: var(--white);
+  }
+  .login-logo-name span { color: var(--blue2); }
+  .login-logo-sub { font-size: 12px; color: var(--gray); margin-top: 4px; letter-spacing: 1px; }
 
-  /* SIDEBAR */
-  .sidebar{width:230px;flex-shrink:0;background:rgba(11,24,38,0.98);border-right:1px solid var(--border2);padding-top:20px;}
-  .nav-sec{font-size:9px;text-transform:uppercase;letter-spacing:3px;color:var(--muted2);padding:16px 20px 8px;}
-  .nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;cursor:pointer;font-size:13px;color:var(--muted);border-left:2px solid transparent;transition:all .15s;}
-  .nav-item:hover{background:rgba(0,180,255,0.06);color:var(--white);}
-  .nav-item.active{background:rgba(0,180,255,0.1);color:var(--neon);border-left-color:var(--neon);text-shadow:0 0 8px rgba(0,180,255,0.5);}
-  .nav-icon{font-size:17px;}
-  .content{flex:1;padding:28px;overflow-y:auto;}
+  .login-field { margin-bottom: 16px; }
+  .login-field label { display:block; font-size:12px; font-weight:600; color:var(--gray); margin-bottom:8px; letter-spacing:.5px; }
+  .login-field input {
+    width:100%; padding:12px 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    color: var(--white); font-size:14px;
+    font-family:'Inter',sans-serif;
+    outline:none; transition:all .2s;
+  }
+  .login-field input:focus { border-color:var(--blue); background:rgba(45,140,255,0.07); box-shadow:0 0 0 3px rgba(45,140,255,0.15); }
+  .login-field input::placeholder { color:var(--gray2); }
 
-  /* MODULE */
-  .mf{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow);max-width:860px;animation:fu .3s ease;}
-  .mh{padding:16px 24px;background:linear-gradient(90deg,rgba(0,100,180,0.25),rgba(0,180,255,0.08));border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
-  .mh-icon{font-size:22px;}
-  .mh h2{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;letter-spacing:2px;color:var(--neon2);text-shadow:var(--glow-sm);text-transform:uppercase;}
-  .mh-line{flex:1;height:1px;background:linear-gradient(90deg,var(--neon-dim),transparent);margin-left:8px;}
-  .mb{padding:28px;}
+  .login-btn {
+    width:100%; padding:14px;
+    background: linear-gradient(90deg, #1a6fff, #00c2ff);
+    border:none; border-radius:var(--radius);
+    color:#fff; font-family:'Inter',sans-serif;
+    font-size:15px; font-weight:700; letter-spacing:1px;
+    cursor:pointer; margin-top:8px;
+    box-shadow: 0 4px 20px rgba(45,140,255,0.4);
+    transition:all .2s;
+  }
+  .login-btn:hover { filter:brightness(1.1); box-shadow:0 6px 28px rgba(45,140,255,0.55); transform:translateY(-1px); }
+  .login-err { color:var(--danger); font-size:12px; text-align:center; margin-top:12px; font-weight:500; }
+  .login-hint { text-align:center; font-size:11px; color:var(--gray2); margin-top:16px; }
 
-  /* FORM */
-  .fr{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap;}
-  .fg{display:flex;flex-direction:column;gap:5px;flex:1;min-width:80px;}
-  .fg label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--neon);opacity:.75;}
-  .fg input,.fg select,.fg textarea{background:var(--input-bg);border:1px solid var(--input-bd);border-radius:var(--radius);padding:8px 12px;font-size:13px;font-family:'Exo 2',sans-serif;color:var(--white);outline:none;transition:all .2s;}
-  .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--neon);box-shadow:var(--glow-sm);background:rgba(0,180,255,0.06);}
-  .fg textarea{resize:vertical;min-height:80px;}
-  .fg select option{background:#0d1e2e;color:#e8f4ff;}
-  .fg.sm{flex:0 0 80px;min-width:60px;} .fg.md{flex:0 0 150px;} .fg.lg{flex:1;min-width:200px;} .fg.xl{flex:2;}
-  .fhint{font-size:10px;color:var(--muted);margin-top:2px;}
-  .req{color:var(--danger);margin-left:2px;}
-  .ck{display:flex;align-items:center;gap:10px;margin-top:12px;}
-  .ck input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:var(--neon);}
-  .ck label{font-size:12px;color:var(--muted);cursor:pointer;}
-  .div{height:1px;background:var(--border2);margin:20px 0;}
+  /* ── TOPBAR ── */
+  .topbar {
+    height: 60px;
+    background: rgba(8,14,40,0.95);
+    border-bottom: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px;
+    position: sticky; top:0; z-index:100;
+    backdrop-filter: blur(12px);
+  }
+  .tb-brand { display:flex; align-items:center; gap:12px; }
+  .tb-icon {
+    width:36px; height:36px;
+    background: linear-gradient(135deg,#1a6fff,#00c2ff);
+    border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px;
+    box-shadow:0 4px 12px rgba(45,140,255,0.4);
+  }
+  .tb-name { font-size:18px; font-weight:800; letter-spacing:2px; color:var(--white); }
+  .tb-name span { color:var(--blue2); }
+  .tb-divider { width:1px; height:20px; background:var(--border2); margin:0 4px; }
+  .tb-page { font-size:13px; color:var(--gray); font-weight:400; }
+  .tb-right { display:flex; align-items:center; gap:14px; }
+  .tb-user { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--gray); }
+  .tb-online { width:7px; height:7px; border-radius:50%; background:var(--success); box-shadow:0 0 6px var(--success); }
+  .tb-logout {
+    padding:7px 16px;
+    background:transparent;
+    border:1px solid var(--border2);
+    border-radius:8px;
+    color:var(--gray); font-size:12px; font-weight:500;
+    cursor:pointer; transition:all .2s;
+    font-family:'Inter',sans-serif;
+  }
+  .tb-logout:hover { border-color:var(--blue); color:var(--white); }
 
-  /* BUTTONS */
-  .bar{display:flex;gap:10px;align-items:center;}
-  .btn{padding:9px 22px;border:none;border-radius:var(--radius);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;position:relative;overflow:hidden;}
-  .btn:disabled{opacity:.5;cursor:not-allowed;}
-  .btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);transition:left .35s;}
-  .btn:hover:not(:disabled)::before{left:100%;}
-  .bs{background:linear-gradient(90deg,#0077cc,#00b4ff);color:#fff;box-shadow:0 0 12px rgba(0,180,255,0.35);}
-  .bs:hover:not(:disabled){box-shadow:var(--glow-md);filter:brightness(1.1);}
-  .bc{background:linear-gradient(90deg,#006644,#00d084);color:#fff;box-shadow:0 0 10px rgba(0,208,132,0.3);}
-  .br{background:rgba(255,255,255,0.07);border:1px solid var(--border);color:var(--muted);}
-  .br:hover:not(:disabled){border-color:var(--neon);color:var(--neon);}
+  /* ── LAYOUT ── */
+  .shell { display:flex; flex-direction:column; min-height:100vh; }
+  .main { display:flex; flex:1; }
 
-  /* STATUS MESSAGES */
-  .msg{padding:12px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;margin-top:16px;display:flex;align-items:center;gap:10px;border:1px solid;}
-  .msg-ok{background:rgba(0,30,20,0.95);border-color:rgba(0,208,132,0.4);color:var(--success);}
-  .msg-err{background:rgba(30,0,10,0.95);border-color:rgba(255,77,109,0.4);color:var(--danger);}
-  .msg-load{background:rgba(0,20,40,0.95);border-color:rgba(0,180,255,0.3);color:var(--neon);}
-  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,180,255,0.3);border-top-color:var(--neon);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width:240px; flex-shrink:0;
+    background: rgba(8,14,40,0.8);
+    border-right:1px solid var(--border2);
+    padding: 24px 0;
+  }
+  .nav-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:2px; color:var(--gray2); padding:0 20px 10px; }
+  .nav-item {
+    display:flex; align-items:center; gap:12px;
+    padding:11px 20px; margin:2px 12px;
+    border-radius:9px;
+    cursor:pointer; font-size:13px; font-weight:500;
+    color:var(--gray); transition:all .15s;
+  }
+  .nav-item:hover { background:rgba(255,255,255,0.05); color:var(--white); }
+  .nav-item.active { background:rgba(45,140,255,0.15); color:var(--white); }
+  .nav-item.active .nav-dot { background:var(--blue); box-shadow:0 0 8px var(--blue); }
+  .nav-icon { font-size:18px; }
+  .nav-dot { width:6px; height:6px; border-radius:50%; background:transparent; margin-left:auto; transition:all .15s; }
+
+  /* ── CONTENT ── */
+  .content { flex:1; padding:32px; overflow-y:auto; }
+
+  /* ── MODULE CARD ── */
+  .mcard {
+    background: var(--card);
+    border:1px solid var(--border2);
+    border-radius:var(--radius-lg);
+    overflow:hidden;
+    box-shadow:var(--shadow);
+    max-width:860px;
+    animation:slideUp .3s ease;
+  }
+  .mcard-header {
+    padding:20px 28px;
+    border-bottom:1px solid var(--border2);
+    display:flex; align-items:center; gap:14px;
+    background: rgba(255,255,255,0.02);
+  }
+  .mcard-icon {
+    width:42px; height:42px;
+    background: rgba(45,140,255,0.15);
+    border:1px solid rgba(45,140,255,0.25);
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px;
+  }
+  .mcard-title { font-size:18px; font-weight:700; color:var(--white); }
+  .mcard-sub { font-size:12px; color:var(--gray); margin-top:2px; }
+  .mcard-body { padding:28px; }
+
+  /* ── FORM ── */
+  .frow { display:flex; gap:16px; margin-bottom:18px; flex-wrap:wrap; }
+  .fg { display:flex; flex-direction:column; gap:6px; flex:1; min-width:80px; }
+  .fg label { font-size:11px; font-weight:600; color:var(--gray); text-transform:uppercase; letter-spacing:.8px; }
+  .fg input, .fg select, .fg textarea {
+    background: rgba(255,255,255,0.05);
+    border:1px solid var(--border2);
+    border-radius:9px;
+    padding:10px 14px;
+    font-size:13px; font-family:'Inter',sans-serif;
+    color:var(--white); outline:none;
+    transition:all .2s;
+  }
+  .fg input:focus, .fg select:focus, .fg textarea:focus {
+    border-color:var(--blue);
+    background:rgba(45,140,255,0.07);
+    box-shadow:0 0 0 3px rgba(45,140,255,0.12);
+  }
+  .fg input::placeholder { color:var(--gray2); }
+  .fg textarea { resize:vertical; min-height:80px; }
+  .fg select option { background:#0d1535; color:#fff; }
+  .fg.sm { flex:0 0 90px; min-width:70px; }
+  .fg.md { flex:0 0 160px; }
+  .fg.lg { flex:1; min-width:200px; }
+  .fg.xl { flex:2; }
+  .fhint { font-size:11px; color:var(--gray2); margin-top:3px; }
+  .req { color:var(--danger); margin-left:2px; }
+
+  .ckrow { display:flex; align-items:center; gap:10px; margin-top:14px; }
+  .ckrow input[type=checkbox] { width:17px; height:17px; cursor:pointer; accent-color:var(--blue); }
+  .ckrow label { font-size:13px; color:var(--gray); cursor:pointer; }
+
+  .divider { height:1px; background:var(--border2); margin:24px 0; }
+
+  /* ── BUTTONS ── */
+  .btn-row { display:flex; gap:12px; align-items:center; }
+  .btn {
+    padding:10px 24px;
+    border:none; border-radius:9px;
+    font-family:'Inter',sans-serif;
+    font-size:13px; font-weight:600;
+    cursor:pointer; transition:all .2s;
+    display:flex; align-items:center; gap:8px;
+  }
+  .btn:disabled { opacity:.45; cursor:not-allowed; }
+  .btn-primary {
+    background: linear-gradient(90deg,#1a6fff,#00c2ff);
+    color:#fff;
+    box-shadow:0 4px 16px rgba(45,140,255,0.35);
+  }
+  .btn-primary:hover:not(:disabled) { filter:brightness(1.1); box-shadow:0 6px 24px rgba(45,140,255,0.5); transform:translateY(-1px); }
+  .btn-ghost {
+    background:transparent;
+    border:1px solid var(--border2);
+    color:var(--gray);
+  }
+  .btn-ghost:hover:not(:disabled) { border-color:var(--blue); color:var(--white); }
+  .pending-note { font-size:12px; color:var(--gray2); display:flex; align-items:center; gap:6px; }
+
+  /* ── STATUS ── */
+  .status-msg {
+    padding:14px 18px;
+    border-radius:10px;
+    font-size:13px; font-weight:500;
+    margin-top:18px;
+    display:flex; align-items:center; gap:10px;
+    border:1px solid;
+  }
+  .status-ok { background:rgba(0,214,143,0.08); border-color:rgba(0,214,143,0.3); color:var(--success); }
+  .status-err { background:rgba(255,92,122,0.08); border-color:rgba(255,92,122,0.3); color:var(--danger); }
+  .status-load { background:rgba(45,140,255,0.08); border-color:rgba(45,140,255,0.25); color:var(--blue2); }
+  .spin { display:inline-block;width:14px;height:14px;border:2px solid rgba(45,140,255,0.25);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0; }
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* DASH */
-  .dw{max-width:900px;}
-  .dwl{margin-bottom:32px;}
-  .dwl h1{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;background:linear-gradient(90deg,#00b4ff,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px;}
-  .dwl p{font-size:13px;color:var(--muted);margin-top:4px;}
-  .dg{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-  .dc{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;box-shadow:var(--shadow);}
-  .dc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--neon),transparent);opacity:0;transition:opacity .2s;}
-  .dc:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,0,0,0.6),var(--glow-sm);}
-  .dc:hover::before{opacity:1;}
-  .dcg{position:absolute;bottom:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(0,180,255,0.12),transparent 70%);}
-  .dct{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
-  .dci{width:44px;height:44px;background:rgba(0,180,255,0.1);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;}
-  .dcl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:8px;}
-  .dcd{font-size:13px;color:var(--muted);margin-top:4px;}
+  /* ── DASHBOARD ── */
+  .dash-welcome { margin-bottom:32px; }
+  .dash-welcome h1 { font-size:30px; font-weight:800; color:var(--white); }
+  .dash-welcome h1 span { color:var(--blue2); }
+  .dash-welcome p { font-size:14px; color:var(--gray); margin-top:6px; }
+  .dash-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; max-width:860px; }
+  .dash-card {
+    background:var(--card);
+    border:1px solid var(--border2);
+    border-radius:var(--radius-lg);
+    padding:28px 24px;
+    cursor:pointer;
+    transition:all .2s;
+    box-shadow:var(--shadow);
+    position:relative; overflow:hidden;
+  }
+  .dash-card:hover { transform:translateY(-4px); border-color:rgba(45,140,255,0.35); box-shadow:var(--shadow),var(--glow); }
+  .dash-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; }
+  .dash-card-icon {
+    width:48px; height:48px;
+    background:rgba(45,140,255,0.12);
+    border:1px solid rgba(45,140,255,0.2);
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px;
+  }
+  .dash-card-arrow { color:var(--gray2); font-size:18px; }
+  .dash-card-label { font-size:16px; font-weight:700; color:var(--white); }
+  .dash-card-desc { font-size:13px; color:var(--gray); margin-top:6px; }
+  .dash-card-line {
+    position:absolute; bottom:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg,#1a6fff,#00c2ff);
+    opacity:0; transition:opacity .2s;
+  }
+  .dash-card:hover .dash-card-line { opacity:1; }
 
-  /* TOAST */
-  .toast-w{position:fixed;top:68px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
-  .toast{padding:12px 20px;border-radius:var(--radius);font-size:13px;font-weight:600;animation:ti .25s ease;box-shadow:0 4px 20px rgba(0,0,0,0.5);border:1px solid;display:flex;align-items:center;gap:8px;min-width:260px;}
-  .tok{background:rgba(0,30,20,0.95);border-color:rgba(0,208,132,0.4);color:var(--success);}
-  .terr{background:rgba(30,0,10,0.95);border-color:rgba(255,77,109,0.4);color:var(--danger);}
-  @keyframes ti{from{transform:translateX(80px);opacity:0}to{transform:none;opacity:1}}
+  /* ── TOAST ── */
+  .toast-wrap { position:fixed;top:72px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px; }
+  .toast { padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;animation:toastIn .25s ease;box-shadow:var(--shadow);border:1px solid;display:flex;align-items:center;gap:10px;min-width:260px; }
+  .toast-ok { background:rgba(8,28,22,0.97);border-color:rgba(0,214,143,0.35);color:var(--success); }
+  .toast-err { background:rgba(28,8,16,0.97);border-color:rgba(255,92,122,0.35);color:var(--danger); }
+  @keyframes toastIn{from{transform:translateX(80px);opacity:0}to{transform:none;opacity:1}}
 `;
 
-const UF = ["AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA","PB","PE","PI","PR","RJ","RN","RO","RR","RS","SC","SE","SP","TO"];
-const fmtCep = v => v.replace(/\D/g,"").replace(/(\d{5})(\d)/,"$1-$2").substring(0,9);
-const fmtFone = v => { const d=v.replace(/\D/g,"").substring(0,10); if(!d.length) return ""; if(d.length<=2) return `(${d}`; if(d.length<=6) return `(${d.slice(0,2)}) ${d.slice(2)}`; return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`; };
-const fmtCel = v => { const d=v.replace(/\D/g,"").substring(0,11); if(!d.length) return ""; if(d.length<=2) return `(${d}`; if(d.length<=7) return `(${d.slice(0,2)}) ${d.slice(2)}`; return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`; };
-const fmtM = v => { const n=v.replace(/\D/g,""); if(!n) return "0,00"; return (parseInt(n,10)/100).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}); };
+const UF=["AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA","PB","PE","PI","PR","RJ","RN","RO","RR","RS","SC","SE","SP","TO"];
+const fmtCep=v=>v.replace(/\D/g,"").replace(/(\d{5})(\d)/,"$1-$2").substring(0,9);
+const fmtFone=v=>{const d=v.replace(/\D/g,"").substring(0,10);if(!d.length)return"";if(d.length<=2)return`(${d}`;if(d.length<=6)return`(${d.slice(0,2)}) ${d.slice(2)}`;return`(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;};
+const fmtCel=v=>{const d=v.replace(/\D/g,"").substring(0,11);if(!d.length)return"";if(d.length<=2)return`(${d}`;if(d.length<=7)return`(${d.slice(0,2)}) ${d.slice(2)}`;return`(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;};
+const fmtM=v=>{const n=v.replace(/\D/g,"");if(!n)return"0,00";return(parseInt(n,10)/100).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});};
 
-function Toast({ t }) {
-  return <div className="toast-w">{t.map(x=><div key={x.id} className={`toast ${x.type==="ok"?"tok":"terr"}`}>{x.type==="ok"?"✓":"✕"} {x.msg}</div>)}</div>;
+function Toast({t}){
+  return<div className="toast-wrap">{t.map(x=><div key={x.id}className={`toast toast-${x.type}`}>{x.type==="ok"?"✓":"✕"} {x.msg}</div>)}</div>;
 }
 
-function Login({ onLogin }) {
-  const [l,setL]=useState(""); const [s,setS]=useState(""); const [e,setE]=useState("");
-  const go = () => { if(l==="admin"&&s==="admin123") onLogin(l); else setE("Usuário ou senha inválidos."); };
-  return (
-    <div className="lw">
-      <div className="lg-glow"/>
-      <div className="lc">
-        <div className="logo-w">
-          <div className="logo-i">💸</div>
-          <div className="logo-n">SAIF PAY</div>
-          <div className="logo-t">Gestão de Eventos &amp; Produtos</div>
+function Login({onLogin}){
+  const[l,setL]=useState("");const[s,setS]=useState("");const[e,setE]=useState("");
+  const go=()=>{if(l==="admin"&&s==="admin123")onLogin(l);else setE("Usuário ou senha inválidos.");};
+  return(
+    <div className="login-wrap">
+      <div className="login-card">
+        <div className="login-logo">
+          <div className="login-logo-icon">💸</div>
+          <div className="login-logo-name">SAIF <span>PAY</span></div>
+          <div className="login-logo-sub">Gestão de Eventos &amp; Produtos</div>
         </div>
-        <div className="lf"><label>Usuário</label><input value={l} onChange={e=>{setL(e.target.value);setE("");}} placeholder="Digite seu usuário" onKeyDown={e=>e.key==="Enter"&&go()}/></div>
-        <div className="lf"><label>Senha</label><input type="password" value={s} onChange={e=>{setS(e.target.value);setE("");}} placeholder="••••••••" onKeyDown={e=>e.key==="Enter"&&go()}/></div>
-        <button className="lb" onClick={go}>ACESSAR SISTEMA</button>
-        {e&&<div className="le">{e}</div>}
-        <div className="lh">Demo: admin / admin123</div>
+        <div className="login-field"><label>Usuário</label><input value={l} onChange={e=>{setL(e.target.value);setE("");}} placeholder="Digite seu usuário" onKeyDown={e=>e.key==="Enter"&&go()}/></div>
+        <div className="login-field"><label>Senha</label><input type="password" value={s} onChange={e=>{setS(e.target.value);setE("");}} placeholder="••••••••" onKeyDown={e=>e.key==="Enter"&&go()}/></div>
+        <button className="login-btn" onClick={go}>Entrar no Sistema</button>
+        {e&&<div className="login-err">{e}</div>}
+        <div className="login-hint">Demo: admin / admin123</div>
       </div>
     </div>
   );
 }
 
-function Topbar({ user, mod, onLogout }) {
-  const labels={dashboard:"Painel",eventos:"Eventos",pontos:"Pontos de Venda",produtos:"Produtos"};
-  return (
+function Topbar({user,mod,onLogout}){
+  const labels={dashboard:"Painel Principal",eventos:"Cadastro de Eventos",pontos:"Pontos de Venda",produtos:"Tabela de Produtos"};
+  return(
     <div className="topbar">
-      <div className="tb-l">
-        <div className="tb-badge">💸</div>
-        <div className="tb-name">SAIF PAY</div>
-        <div className="tb-sep"/>
-        <div className="tb-mod">{labels[mod]||""}</div>
+      <div className="tb-brand">
+        <div className="tb-icon">💸</div>
+        <div className="tb-name">SAIF <span>PAY</span></div>
+        <div className="tb-divider"/>
+        <div className="tb-page">{labels[mod]||""}</div>
       </div>
-      <div className="tb-r">
-        <div className="tb-user"><div className="tb-dot"/>{user}</div>
-        <button className="out-btn" onClick={onLogout}>⏻ Sair</button>
+      <div className="tb-right">
+        <div className="tb-user"><div className="tb-online"/>{user}</div>
+        <button className="tb-logout" onClick={onLogout}>Sair</button>
       </div>
     </div>
   );
 }
 
-function Sidebar({ active, onNav }) {
+function Sidebar({active,onNav}){
   const items=[
-    {key:"dashboard",icon:"⬡",label:"Painel"},
+    {key:"dashboard",icon:"⊞",label:"Painel"},
     {key:"eventos",icon:"🎪",label:"Eventos"},
     {key:"pontos",icon:"🏪",label:"Pontos de Venda"},
     {key:"produtos",icon:"📦",label:"Produtos"},
   ];
-  return (
+  return(
     <div className="sidebar">
-      <div className="nav-sec">Navegação</div>
+      <div className="nav-label">Menu</div>
       {items.map(i=>(
         <div key={i.key} className={`nav-item${active===i.key?" active":""}`} onClick={()=>onNav(i.key)}>
           <span className="nav-icon">{i.icon}</span>{i.label}
+          <div className="nav-dot"/>
         </div>
       ))}
     </div>
   );
 }
 
-function Dashboard({ onNav }) {
-  const cards = [
-    { key:"eventos",  icon:"🎪", label:"Eventos",         desc:"Cadastrar novo evento" },
-    { key:"pontos",   icon:"🏪", label:"Pontos de Venda", desc:"Cadastrar ponto de venda" },
-    { key:"produtos", icon:"📦", label:"Produtos",        desc:"Cadastrar produto" },
+function Dashboard({onNav}){
+  const cards=[
+    {key:"eventos",icon:"🎪",label:"Eventos",desc:"Cadastrar novos eventos"},
+    {key:"pontos",icon:"🏪",label:"Pontos de Venda",desc:"Gerenciar barracas e pontos"},
+    {key:"produtos",icon:"📦",label:"Produtos",desc:"Tabela de produtos e preços"},
   ];
-  return (
-    <div className="dw">
-      <div className="dwl">
-        <h1>BEM-VINDO AO SAIF PAY</h1>
-        <p>Selecione um módulo para cadastrar informações.</p>
+  return(
+    <div>
+      <div className="dash-welcome">
+        <h1>Bem-vindo ao <span>SAIF PAY</span></h1>
+        <p>Selecione um módulo abaixo para começar o cadastro.</p>
       </div>
-      <div className="dg">
+      <div className="dash-grid">
         {cards.map(c=>(
-          <div key={c.key} className="dc" onClick={()=>onNav(c.key)}>
-            <div className="dcg"/>
-            <div className="dct"><div className="dci">{c.icon}</div></div>
-            <div className="dcl">{c.label}</div>
-            <div className="dcd">{c.desc}</div>
+          <div key={c.key} className="dash-card" onClick={()=>onNav(c.key)}>
+            <div className="dash-card-line"/>
+            <div className="dash-card-top">
+              <div className="dash-card-icon">{c.icon}</div>
+              <span className="dash-card-arrow">→</span>
+            </div>
+            <div className="dash-card-label">{c.label}</div>
+            <div className="dash-card-desc">{c.desc}</div>
           </div>
         ))}
       </div>
@@ -226,189 +422,132 @@ function Dashboard({ onNav }) {
   );
 }
 
-// ── EVENTOS
-const EV0 = { descricao:"", endereco:"", bairro:"", cidade:"", uf:"", cep:"", fone:"", celular:"", eMail:"", observacao:"", dataInicio:"", dataFim:"", responsavel:"", cupom:false };
+const EV0={descricao:"",endereco:"",bairro:"",cidade:"",uf:"",cep:"",fone:"",celular:"",eMail:"",observacao:"",dataInicio:"",dataFim:"",responsavel:"",cupom:false};
 
-function Eventos() {
-  const [f, setF] = useState(EV0);
-  const [status, setStatus] = useState(null); // null | {type, msg}
-  const [loading, setLoading] = useState(false);
-  const set = (k,v) => setF(x=>({...x,[k]:v}));
-
-  const limpar = () => { setF(EV0); setStatus(null); };
-
-  const salvar = async () => {
-    if(!f.descricao.trim()) { setStatus({type:"err", msg:"Descrição é obrigatória."}); return; }
-    setLoading(true); setStatus(null);
-    try {
-      const body = {
-        descricao: f.descricao,
-        endereco: f.endereco,
-        bairro: f.bairro,
-        cidade: f.cidade,
-        uf: f.uf,
-        cep: f.cep.replace(/\D/g,""),
-        fone: f.fone.replace(/\D/g,""),
-        celular: f.celular.replace(/\D/g,""),
-        eMail: f.eMail,
-        observacao: f.observacao,
-        dataInicio: f.dataInicio ? f.dataInicio + "T00:00:00" : "",
-        dataFim: f.dataFim ? f.dataFim + "T23:59:00" : "",
-        responsavel: f.responsavel,
-        cupom: f.cupom ? "1" : "0"
-      };
-      const res = await fetch(`${API}/GrvEve`, {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      if(data.status === "ok") {
-        setStatus({type:"ok", msg:`Evento cadastrado com sucesso! ID: ${data.id}`});
-        setF(EV0);
-      } else {
-        setStatus({type:"err", msg:"Erro ao cadastrar evento. Tente novamente."});
-      }
-    } catch(e) {
-      setStatus({type:"err", msg:"Erro de conexão com a API. Verifique a rede."});
-    }
+function Eventos(){
+  const[f,setF]=useState(EV0);const[status,setStatus]=useState(null);const[loading,setLoading]=useState(false);
+  const set=(k,v)=>setF(x=>({...x,[k]:v}));
+  const limpar=()=>{setF(EV0);setStatus(null);};
+  const salvar=async()=>{
+    if(!f.descricao.trim()){setStatus({type:"err",msg:"Descrição é obrigatória."});return;}
+    setLoading(true);setStatus(null);
+    try{
+      const body={descricao:f.descricao,endereco:f.endereco,bairro:f.bairro,cidade:f.cidade,uf:f.uf,cep:f.cep.replace(/\D/g,""),fone:f.fone.replace(/\D/g,""),celular:f.celular.replace(/\D/g,""),eMail:f.eMail,observacao:f.observacao,dataInicio:f.dataInicio?f.dataInicio+"T00:00:00":"",dataFim:f.dataFim?f.dataFim+"T23:59:00":"",responsavel:f.responsavel,cupom:f.cupom?"1":"0"};
+      const res=await fetch(`${API}/GrvEve`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+      const data=await res.json();
+      if(data.status==="ok"){setStatus({type:"ok",msg:`Evento cadastrado com sucesso! Código: ${data.id}`});setF(EV0);}
+      else setStatus({type:"err",msg:"Erro ao cadastrar evento. Tente novamente."});
+    }catch(e){setStatus({type:"err",msg:"Erro de conexão com a API."});}
     setLoading(false);
   };
-
-  return (
-    <div className="mf">
-      <div className="mh"><span className="mh-icon">🎪</span><h2>Novo Evento</h2><div className="mh-line"/></div>
-      <div className="mb">
-        <div className="fr">
-          <div className="fg xl"><label>Descrição<span className="req">*</span></label><input value={f.descricao} onChange={e=>set("descricao",e.target.value)} maxLength={100} autoFocus/></div>
+  return(
+    <div className="mcard">
+      <div className="mcard-header">
+        <div className="mcard-icon">🎪</div>
+        <div><div className="mcard-title">Novo Evento</div><div className="mcard-sub">Preencha os dados do evento</div></div>
+      </div>
+      <div className="mcard-body">
+        <div className="frow">
+          <div className="fg xl"><label>Descrição<span className="req">*</span></label><input value={f.descricao} onChange={e=>set("descricao",e.target.value)} placeholder="Nome do evento" autoFocus/></div>
         </div>
-        <div className="fr">
-          <div className="fg lg"><label>Endereço</label><input value={f.endereco} onChange={e=>set("endereco",e.target.value)}/></div>
-          <div className="fg md"><label>Bairro</label><input value={f.bairro} onChange={e=>set("bairro",e.target.value)}/></div>
+        <div className="frow">
+          <div className="fg lg"><label>Endereço</label><input value={f.endereco} onChange={e=>set("endereco",e.target.value)} placeholder="Rua, número"/></div>
+          <div className="fg md"><label>Bairro</label><input value={f.bairro} onChange={e=>set("bairro",e.target.value)} placeholder="Bairro"/></div>
         </div>
-        <div className="fr">
-          <div className="fg lg"><label>Cidade</label><input value={f.cidade} onChange={e=>set("cidade",e.target.value)}/></div>
+        <div className="frow">
+          <div className="fg lg"><label>Cidade</label><input value={f.cidade} onChange={e=>set("cidade",e.target.value)} placeholder="Cidade"/></div>
           <div className="fg sm"><label>UF</label><select value={f.uf} onChange={e=>set("uf",e.target.value)}><option value=""/>{UF.map(u=><option key={u}>{u}</option>)}</select></div>
           <div className="fg md"><label>CEP</label><input value={f.cep} onChange={e=>set("cep",fmtCep(e.target.value))} placeholder="00000-000"/></div>
           <div className="fg md"><label>Fone Fixo</label><input value={f.fone} onChange={e=>set("fone",fmtFone(e.target.value))} placeholder="(00) 0000-0000"/></div>
           <div className="fg md"><label>Celular</label><input value={f.celular} onChange={e=>set("celular",fmtCel(e.target.value))} placeholder="(00) 00000-0000"/></div>
         </div>
-        <div className="fr">
+        <div className="frow">
           <div className="fg md"><label>Data Início</label><input type="date" value={f.dataInicio} onChange={e=>set("dataInicio",e.target.value)}/></div>
           <div className="fg md"><label>Data Fim</label><input type="date" value={f.dataFim} onChange={e=>set("dataFim",e.target.value)}/></div>
-          <div className="fg xl"><label>E-mail</label><input type="email" value={f.eMail} onChange={e=>set("eMail",e.target.value)}/></div>
+          <div className="fg xl"><label>E-mail</label><input type="email" value={f.eMail} onChange={e=>set("eMail",e.target.value)} placeholder="email@exemplo.com"/></div>
         </div>
-        <div className="fr">
-          <div className="fg lg"><label>Responsável</label><input value={f.responsavel} onChange={e=>set("responsavel",e.target.value)}/></div>
+        <div className="frow">
+          <div className="fg lg"><label>Responsável</label><input value={f.responsavel} onChange={e=>set("responsavel",e.target.value)} placeholder="Nome do responsável"/></div>
         </div>
-        <div className="fr">
-          <div className="fg xl"><label>Observações</label><textarea value={f.observacao} onChange={e=>set("observacao",e.target.value)}/></div>
+        <div className="frow">
+          <div className="fg xl"><label>Observações</label><textarea value={f.observacao} onChange={e=>set("observacao",e.target.value)} placeholder="Informações adicionais..."/></div>
         </div>
-        <div className="ck">
+        <div className="ckrow">
           <input type="checkbox" id="cup" checked={f.cupom} onChange={e=>set("cupom",e.target.checked)}/>
           <label htmlFor="cup">Impressora de Cupom nos Caixas de Consumo</label>
         </div>
-        <div className="div"/>
-        <div className="bar">
-          <button className="btn bs" onClick={salvar} disabled={loading}>
-            {loading ? <><span className="spin"/> Salvando...</> : "💾 Cadastrar"}
+        <div className="divider"/>
+        <div className="btn-row">
+          <button className="btn btn-primary" onClick={salvar} disabled={loading}>
+            {loading?<><span className="spin"/>Salvando...</>:"Cadastrar Evento"}
           </button>
-          <button className="btn br" onClick={limpar} disabled={loading}>✕ Limpar</button>
+          <button className="btn btn-ghost" onClick={limpar} disabled={loading}>Limpar</button>
         </div>
-        {status && (
-          <div className={`msg msg-${status.type}`}>
-            {status.type==="ok" ? "✓" : "✕"} {status.msg}
-          </div>
-        )}
+        {status&&<div className={`status-msg status-${status.type}`}>{status.type==="ok"?"✓":"✕"} {status.msg}</div>}
       </div>
     </div>
   );
 }
 
-// ── PONTOS DE VENDA
-function Pontos() {
-  const [descricao, setDescricao] = useState("");
-  const [status, setStatus] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  const limpar = () => { setDescricao(""); setStatus(null); };
-
-  const salvar = async () => {
-    if(!descricao.trim()) { setStatus({type:"err", msg:"Descrição é obrigatória."}); return; }
-    setLoading(true); setStatus(null);
-    try {
-      const res = await fetch(`${API}/GrpBarraca`, {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ descricao })
-      });
-      const data = await res.json();
-      if(data.status === "ok") {
-        setStatus({type:"ok", msg:`Ponto de Venda cadastrado com sucesso! Código: ${data.GRPCod}`});
-        setDescricao("");
-      } else {
-        setStatus({type:"err", msg:"Erro ao cadastrar. Tente novamente."});
-      }
-    } catch(e) {
-      setStatus({type:"err", msg:"Erro de conexão com a API. Verifique a rede."});
-    }
+function Pontos(){
+  const[desc,setDesc]=useState("");const[status,setStatus]=useState(null);const[loading,setLoading]=useState(false);
+  const limpar=()=>{setDesc("");setStatus(null);};
+  const salvar=async()=>{
+    if(!desc.trim()){setStatus({type:"err",msg:"Descrição é obrigatória."});return;}
+    setLoading(true);setStatus(null);
+    try{
+      const res=await fetch(`${API}/GrpBarraca`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({descricao:desc})});
+      const data=await res.json();
+      if(data.status==="ok"){setStatus({type:"ok",msg:`Ponto de Venda cadastrado! Código: ${data.GRPCod}`});setDesc("");}
+      else setStatus({type:"err",msg:"Erro ao cadastrar. Tente novamente."});
+    }catch(e){setStatus({type:"err",msg:"Erro de conexão com a API."});}
     setLoading(false);
   };
-
-  return (
-    <div className="mf">
-      <div className="mh"><span className="mh-icon">🏪</span><h2>Novo Ponto de Venda</h2><div className="mh-line"/></div>
-      <div className="mb">
-        <div className="fr">
+  return(
+    <div className="mcard">
+      <div className="mcard-header">
+        <div className="mcard-icon">🏪</div>
+        <div><div className="mcard-title">Novo Ponto de Venda</div><div className="mcard-sub">O código será gerado automaticamente</div></div>
+      </div>
+      <div className="mcard-body">
+        <div className="frow">
           <div className="fg xl">
             <label>Descrição<span className="req">*</span></label>
-            <input value={descricao} onChange={e=>setDescricao(e.target.value)} maxLength={100} autoFocus
-              onKeyDown={e=>e.key==="Enter"&&salvar()}/>
-            <span className="fhint">O código será gerado automaticamente pelo sistema.</span>
+            <input value={desc} onChange={e=>setDesc(e.target.value)} placeholder="Ex: Bebidas, Alimentos, Entrada..." autoFocus onKeyDown={e=>e.key==="Enter"&&salvar()}/>
           </div>
         </div>
-        <div className="div"/>
-        <div className="bar">
-          <button className="btn bs" onClick={salvar} disabled={loading}>
-            {loading ? <><span className="spin"/> Salvando...</> : "💾 Cadastrar"}
+        <div className="divider"/>
+        <div className="btn-row">
+          <button className="btn btn-primary" onClick={salvar} disabled={loading}>
+            {loading?<><span className="spin"/>Salvando...</>:"Cadastrar Ponto"}
           </button>
-          <button className="btn br" onClick={limpar} disabled={loading}>✕ Limpar</button>
+          <button className="btn btn-ghost" onClick={limpar} disabled={loading}>Limpar</button>
         </div>
-        {status && (
-          <div className={`msg msg-${status.type}`}>
-            {status.type==="ok" ? "✓" : "✕"} {status.msg}
-          </div>
-        )}
+        {status&&<div className={`status-msg status-${status.type}`}>{status.type==="ok"?"✓":"✕"} {status.msg}</div>}
       </div>
     </div>
   );
 }
 
-// ── PRODUTOS
-function Produtos() {
-  const [pontos, setPontos] = useState([]);
-  const [loadingPontos, setLoadingPontos] = useState(true);
-  const [erroPontos, setErroPontos] = useState(false);
-  const [f, setF] = useState({ grupo:"", descricao:"", valor_unitario:"0,00" });
-  const [status, setStatus] = useState(null);
-  const set = (k,v) => setF(x=>({...x,[k]:v}));
-
-  useEffect(() => {
-    fetch(`${API}/LerBarraca`)
-      .then(r=>r.json())
-      .then(data=>{ setPontos(data); setLoadingPontos(false); })
-      .catch(()=>{ setErroPontos(true); setLoadingPontos(false); });
-  }, []);
-
-  return (
-    <div className="mf">
-      <div className="mh"><span className="mh-icon">📦</span><h2>Novo Produto</h2><div className="mh-line"/></div>
-      <div className="mb">
-        {loadingPontos && <div className="msg msg-load"><span className="spin"/> Carregando Pontos de Venda...</div>}
-        {erroPontos && <div className="msg msg-err">✕ Erro ao carregar Pontos de Venda da API.</div>}
-        {!loadingPontos && !erroPontos && (
+function Produtos(){
+  const[pontos,setPontos]=useState([]);const[loadingP,setLoadingP]=useState(true);const[erroP,setErroP]=useState(false);
+  const[f,setF]=useState({grupo:"",descricao:"",valor_unitario:"0,00"});const[status,setStatus]=useState(null);
+  const set=(k,v)=>setF(x=>({...x,[k]:v}));
+  useEffect(()=>{
+    fetch(`${API}/LerBarraca`).then(r=>r.json()).then(d=>{setPontos(d);setLoadingP(false);}).catch(()=>{setErroP(true);setLoadingP(false);});
+  },[]);
+  return(
+    <div className="mcard">
+      <div className="mcard-header">
+        <div className="mcard-icon">📦</div>
+        <div><div className="mcard-title">Novo Produto</div><div className="mcard-sub">Selecione o grupo e informe os dados</div></div>
+      </div>
+      <div className="mcard-body">
+        {loadingP&&<div className="status-msg status-load"><span className="spin"/>Carregando Pontos de Venda...</div>}
+        {erroP&&<div className="status-msg status-err">✕ Erro ao carregar Pontos de Venda da API.</div>}
+        {!loadingP&&!erroP&&(
           <>
-            <div className="fr">
+            <div className="frow">
               <div className="fg lg">
                 <label>Grupo / Ponto de Venda<span className="req">*</span></label>
                 <select value={f.grupo} onChange={e=>set("grupo",e.target.value)}>
@@ -417,32 +556,28 @@ function Produtos() {
                 </select>
               </div>
             </div>
-            <div className="fr">
-              <div className="fg xl"><label>Descrição<span className="req">*</span></label><input value={f.descricao} onChange={e=>set("descricao",e.target.value)} maxLength={100}/></div>
+            <div className="frow">
+              <div className="fg xl"><label>Descrição<span className="req">*</span></label><input value={f.descricao} onChange={e=>set("descricao",e.target.value)} placeholder="Nome do produto"/></div>
               <div className="fg md" style={{maxWidth:160}}><label>Valor Unitário (R$)</label><input style={{textAlign:"right"}} value={f.valor_unitario} onChange={e=>set("valor_unitario",fmtM(e.target.value))}/></div>
             </div>
-            <div className="div"/>
-            <div className="bar">
-              <button className="btn bs" disabled style={{opacity:.4}}>💾 Cadastrar</button>
-              <span style={{fontSize:12,color:"var(--muted)",marginLeft:8}}>⏳ Aguardando API de Produtos</span>
+            <div className="divider"/>
+            <div className="btn-row">
+              <button className="btn btn-primary" disabled style={{opacity:.4}}>Cadastrar Produto</button>
+              <span className="pending-note">⏳ Aguardando API de Produtos</span>
             </div>
           </>
         )}
-        {status && <div className={`msg msg-${status.type}`}>{status.type==="ok"?"✓":"✕"} {status.msg}</div>}
+        {status&&<div className={`status-msg status-${status.type}`}>{status.type==="ok"?"✓":"✕"} {status.msg}</div>}
       </div>
     </div>
   );
 }
 
-// ── ROOT
-export default function App() {
-  const [user,setUser]=useState(null);
-  const [mod,setMod]=useState("dashboard");
-  const [toasts,setToasts]=useState([]);
+export default function App(){
+  const[user,setUser]=useState(null);const[mod,setMod]=useState("dashboard");const[toasts,setToasts]=useState([]);
   const addToast=useCallback((msg,type="ok")=>{const id=Date.now();setToasts(t=>[...t,{id,msg,type}]);setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),3500);},[]);
-
-  if(!user) return <><style>{S}</style><Login onLogin={u=>setUser(u)}/></>;
-  return (
+  if(!user)return<><style>{S}</style><Login onLogin={u=>setUser(u)}/></>;
+  return(
     <>
       <style>{S}</style>
       <Toast t={toasts}/>
@@ -451,10 +586,10 @@ export default function App() {
         <div className="main">
           <Sidebar active={mod} onNav={setMod}/>
           <div className="content">
-            {mod==="dashboard" && <Dashboard onNav={setMod}/>}
-            {mod==="eventos"   && <Eventos addToast={addToast}/>}
-            {mod==="pontos"    && <Pontos addToast={addToast}/>}
-            {mod==="produtos"  && <Produtos addToast={addToast}/>}
+            {mod==="dashboard"&&<Dashboard onNav={setMod}/>}
+            {mod==="eventos"&&<Eventos/>}
+            {mod==="pontos"&&<Pontos/>}
+            {mod==="produtos"&&<Produtos/>}
           </div>
         </div>
       </div>
