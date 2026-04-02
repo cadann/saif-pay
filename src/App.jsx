@@ -435,12 +435,14 @@ function Eventos(){
     if(!f.descricao.trim()){setStatus({type:"err",msg:"Descrição é obrigatória."});return;}
     setLoading(true);setStatus(null);
     try{
-      const body={descricao:f.descricao,endereco:f.endereco,bairro:f.bairro,cidade:f.cidade,uf:f.uf,cep:f.cep.replace(/\D/g,""),fone:f.fone.replace(/\D/g,""),celular:f.celular.replace(/\D/g,""),eMail:f.eMail,observacao:f.observacao,dataInicio:f.dataInicio?f.dataInicio+"T00:00:00":"",dataFim:f.dataFim?f.dataFim+"T23:59:00":"",responsavel:f.responsavel,cupom:f.cupom?"1":"0"};
+      const body={descricao:f.descricao,endereco:f.endereco||"",bairro:f.bairro||"",cidade:f.cidade||"",uf:f.uf||"",cep:f.cep.replace(/\D/g,"")||"",fone:f.fone.replace(/\D/g,"")||"",celular:f.celular.replace(/\D/g,"")||"",eMail:f.eMail||"",observacao:f.observacao||"",dataInicio:f.dataInicio?`${f.dataInicio}T00:00:00`:null,dataFim:f.dataFim?`${f.dataFim}T23:59:00`:null,responsavel:f.responsavel||"",cupom:f.cupom?"1":"0"};
       const res=await fetch(`${API}/GrvEve`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
-      const data=await res.json();
-      if(data.status==="ok"){setStatus({type:"ok",msg:`Evento cadastrado com sucesso! Código: ${data.id}`});setF(EV0);}
-      else setStatus({type:"err",msg:"Erro ao cadastrar evento. Tente novamente."});
-    }catch(e){setStatus({type:"err",msg:"Erro de conexão com a API."});}
+      const text=await res.text();
+      let data;
+      try{ data=JSON.parse(text); }catch(pe){ setStatus({type:"err",msg:"Resposta inválida: "+text.substring(0,100)}); setLoading(false); return; }
+      if(data.status==="ok"){setStatus({type:"ok",msg:"Evento cadastrado! Código: "+data.id});setF(EV0);}
+      else setStatus({type:"err",msg:"API retornou: "+JSON.stringify(data)});
+    }catch(e){setStatus({type:"err",msg:"Erro de conexão: "+e.message});}
     setLoading(false);
   };
   return(
