@@ -504,6 +504,7 @@ function Produtos() {
   const [erroP, setErroP] = useState(false);
   const [f, setF] = useState({ grupo:"", descricao:"", valor_unitario:"0,00" });
   const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
   const set = (k, v) => setF(x => ({...x, [k]:v}));
 
   useEffect(() => {
@@ -512,6 +513,32 @@ function Produtos() {
       .then(d => { setPontos(d); setLoadingP(false); })
       .catch(() => { setErroP(true); setLoadingP(false); });
   }, []);
+
+  const limpar = () => { setF({ grupo:"", descricao:"", valor_unitario:"0,00" }); setStatus(null); };
+
+  const salvar = async () => {
+    if (!f.grupo) { setStatus({type:"err", msg:"Grupo é obrigatório."}); return; }
+    if (!f.descricao.trim()) { setStatus({type:"err", msg:"Descrição é obrigatória."}); return; }
+    setLoading(true);
+    setStatus(null);
+    try {
+      const valorNumerico = parseFloat(f.valor_unitario.replace(/\./g,"").replace(",",".")) || 0;
+      const body = {
+        grpCod:    parseInt(f.grupo),
+        descricao: f.descricao,
+        valor:     valorNumerico
+      };
+      const res  = await fetch(API + "/GrvPrd", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body) });
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch(pe) { setStatus({type:"err", msg:"Resposta inesperada: " + text.substring(0,120)}); setLoading(false); return; }
+      if (data.status === "ok") { setStatus({type:"ok", msg:"Produto cadastrado! Código: " + data.codigo}); setF({ grupo:"", descricao:"", valor_unitario:"0,00" }); }
+      else setStatus({type:"err", msg:"API retornou: " + JSON.stringify(data)});
+    } catch(err) {
+      setStatus({type:"err", msg:"Erro de conexão: " + err.message});
+    }
+    setLoading(false);
+  };
 
   return (
     <div className="mcard" translate="no">
@@ -539,8 +566,10 @@ function Produtos() {
             </div>
             <div className="divider" />
             <div className="btn-row">
-              <button className="btn btn-primary" disabled style={{opacity:.4}}>Cadastrar Produto</button>
-              <span className="pending-note">⏳ Aguardando API de Produtos</span>
+              <button className="btn btn-primary" onClick={salvar} disabled={loading}>
+                {loading ? <><span className="spin" />Salvando...</> : "Cadastrar Produto"}
+              </button>
+              <button className="btn btn-ghost" onClick={limpar} disabled={loading}>Limpar</button>
             </div>
           </>
         )}
