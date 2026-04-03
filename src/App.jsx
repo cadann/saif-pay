@@ -260,13 +260,35 @@ function Toast({ t }) {
 }
 
 function Login({ onLogin }) {
-  const [l, setL] = useState("");
-  const [s, setS] = useState("");
+  const [cel, setCel] = useState("");
   const [e, setE] = useState("");
-  const go = () => {
-    if (l==="admin" && s==="admin123") onLogin(l);
-    else setE("Usuário ou senha inválidos.");
+  const [loading, setLoading] = useState(false);
+
+  const fmtCelular = v => {
+    const d = v.replace(/\D/g,"").substring(0,11);
+    if (!d.length) return "";
+    if (d.length <= 2) return "("+d;
+    if (d.length <= 7) return "("+d.slice(0,2)+") "+d.slice(2);
+    return "("+d.slice(0,2)+") "+d.slice(2,7)+"-"+d.slice(7);
   };
+
+  const go = async () => {
+    const num = cel.replace(/\D/g,"");
+    if (num.length < 10) { setE("Informe um celular válido."); return; }
+    setLoading(true);
+    setE("");
+    try {
+      const res = await fetch(API + "/PegaAut?cel=" + encodeURIComponent(num));
+      if (res.status === 404) { setE("Usuário não encontrado."); setLoading(false); return; }
+      if (!res.ok) { setE("Erro ao autenticar. Tente novamente."); setLoading(false); return; }
+      const data = await res.json();
+      onLogin({ cel: num, ...data });
+    } catch(err) {
+      setE("Erro de conexão: " + err.message);
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="login-wrap" translate="no">
       <div className="login-card">
@@ -276,16 +298,14 @@ function Login({ onLogin }) {
           <div className="login-logo-sub">Gestão de Eventos e Produtos</div>
         </div>
         <div className="login-field">
-          <label>Usuário</label>
-          <input value={l} onChange={ev=>{setL(ev.target.value);setE("");}} placeholder="Digite seu usuário" onKeyDown={ev=>ev.key==="Enter"&&go()} />
+          <label>Celular</label>
+          <input value={cel} onChange={ev=>{setCel(fmtCelular(ev.target.value));setE("");}}
+            placeholder="(00) 00000-0000" onKeyDown={ev=>ev.key==="Enter"&&go()} />
         </div>
-        <div className="login-field">
-          <label>Senha</label>
-          <input type="password" value={s} onChange={ev=>{setS(ev.target.value);setE("");}} placeholder="••••••••" onKeyDown={ev=>ev.key==="Enter"&&go()} />
-        </div>
-        <button className="login-btn" onClick={go}>Entrar no Sistema</button>
+        <button className="login-btn" onClick={go} disabled={loading}>
+          {loading ? "Verificando..." : "Entrar no Sistema"}
+        </button>
         {e && <div className="login-err">{e}</div>}
-        <div className="login-hint">Demo: admin / admin123</div>
       </div>
     </div>
   );
@@ -302,7 +322,7 @@ function Topbar({ user, mod, onLogout }) {
         <div className="tb-page">{labels[mod] || ""}</div>
       </div>
       <div className="tb-right">
-        <div className="tb-user"><div className="tb-online" />{user}</div>
+        <div className="tb-user"><div className="tb-online" />{user?.cel || user}</div>
         <button className="tb-logout" onClick={onLogout}>Sair</button>
       </div>
     </div>
