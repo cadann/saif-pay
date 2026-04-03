@@ -282,6 +282,7 @@ function Login({ onLogin }) {
       if (res.status === 404) { setE("Usuário não encontrado."); setLoading(false); return; }
       if (!res.ok) { setE("Erro ao autenticar. Tente novamente."); setLoading(false); return; }
       const data = await res.json();
+      if (!data.funcao || data.funcao[3] !== "X") { setE("Acesso não autorizado para este painel."); setLoading(false); return; }
       onLogin({ cel: num, ...data });
     } catch(err) {
       setE("Erro de conexão: " + err.message);
