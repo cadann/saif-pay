@@ -380,11 +380,11 @@ function Eventos() {
         uf:          f.uf || "",
         cep:         f.cep.replace(/\D/g,"") || "",
         fone:        f.fone.replace(/\D/g,"") || "",
-        Celular:     f.celular.replace(/\D/g,"") || "",
+        celular:     f.celular.replace(/\D/g,"") || "",
         eMail:       f.eMail || "",
-        Observacao:  f.observacao || "",
-        DataInicio:  f.dataInicio ? (d=>d[0]+"-"+d[1]+"-"+d[2]+" 00:00")(f.dataInicio.split("-")) : "",
-        DataFim:     f.dataFim   ? (d=>d[0]+"-"+d[1]+"-"+d[2]+" 23:59")(f.dataFim.split("-"))   : "",
+        observacao:  f.observacao || "",
+        dataInicio:  f.dataInicio ? f.dataInicio+"T00:00:00" : "",
+        dataFim:     f.dataFim   ? f.dataFim+"T23:59:00"   : "",
         responsavel: f.responsavel || "",
         cupom:       f.cupom ? "1" : "0"
       };
